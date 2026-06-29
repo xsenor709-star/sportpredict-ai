@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 st.set_page_config(
     page_title="SportPredict AI",
@@ -9,21 +10,33 @@ st.set_page_config(
 st.title("⚽ SportPredict AI")
 st.subheader("Analizador Deportivo")
 
-st.write("Bienvenido a la primera versión del proyecto.")
-
 archivo = st.file_uploader(
     "Subí un archivo (.txt, .csv o .xlsx)",
     type=["txt", "csv", "xlsx"]
 )
 
-if archivo:
+if archivo is not None:
+
     st.success("✅ Archivo cargado correctamente")
-    st.write("Nombre del archivo:", archivo.name)
 
-st.divider()
+    if archivo.name.endswith(".txt"):
+        contenido = archivo.read().decode("utf-8")
 
-st.header("📊 Estadísticas")
-st.info("Próximamente aparecerán las estadísticas.")
+        lineas = contenido.splitlines()
 
-st.header("🎯 Predicciones")
-st.info("Disponible en la versión 0.2")
+        st.header("📊 Resumen del archivo")
+
+        st.write(f"Total de líneas: {len(lineas)}")
+
+        partidos = sum(1 for l in lineas if l.strip().startswith("*"))
+
+        goles = sum(1 for l in lineas if "Min" in l or "1T" in l or "2T" in l)
+
+        st.metric("Partidos encontrados", partidos)
+        st.metric("Eventos de gol encontrados", goles)
+
+        with st.expander("Ver contenido"):
+            st.text(contenido[:5000])
+
+    else:
+        st.info("Por ahora solo analizaremos archivos TXT.")
